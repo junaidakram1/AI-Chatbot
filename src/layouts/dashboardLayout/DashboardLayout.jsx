@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import "./DashboardLayout.css";
 import { useAuth } from "@clerk/clerk-react";
 import { useEffect } from "react";
-// import ChatList from "../../components/Chat/ChatList";
+import ChatList from "../../components/ChatList/ChatList";
 
 const DashboardLayout = () => {
   const { userId, isLoaded } = useAuth();
@@ -19,7 +19,9 @@ const DashboardLayout = () => {
 
   return (
     <div className="dashboardLayout">
-      <div className="menu">{/* <ChatList /> */}</div>
+      <div className="menu">
+        <ChatList />/
+      </div>
       <div className="content">
         <Outlet />
       </div>
