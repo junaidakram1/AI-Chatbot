@@ -18,13 +18,24 @@ const genAI = new GoogleGenAI({
 export function startChat({ history = [], generationConfig = {} }) {
   return {
     async sendMessageStream(messages) {
-      const prompt = messages
-        .map((msg) => (typeof msg === "string" ? msg : JSON.stringify(msg)))
-        .join("\n");
+      const contents = messages.map((msg) => {
+        if (typeof msg === "string") {
+          return { text: msg };
+        } else if (msg.base64 && msg.mimeType) {
+          return {
+            inlineData: {
+              data: msg.base64,
+              mimeType: msg.mimeType,
+            },
+          };
+        }
+
+        return { text: JSON.stringify(msg) };
+      });
 
       const response = await genAI.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: prompt,
+        contents,
         safetySettings: safetySetting,
         ...generationConfig,
       });

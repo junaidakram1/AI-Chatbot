@@ -48,10 +48,8 @@ const Upload = ({ setImg }) => {
         ...prev,
         isLoading: true,
         aiData: {
-          inlineData: {
-            data: reader.result.split(",")[1],
-            mimeType: file.type,
-          },
+          base64: reader.result.split(",")[1],
+          mimeType: file.type,
         },
       }));
     };

@@ -16,7 +16,21 @@ const NewPrompt = () => {
     aiData: {},
   });
 
-  const chat = startChat({ history: [], generationConfig: {} });
+  const chat = startChat({
+    history: [
+      {
+        role: "user",
+        parts: [{ text: "Hello, I have 2 dogs in my house." }],
+      },
+      {
+        role: "model",
+        parts: [{ text: "Great to meet you. What would you like to know?" }],
+      },
+    ],
+    generationConfig: {
+      maxOutputTokens: 100,
+    },
+  });
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,6 +49,7 @@ const NewPrompt = () => {
         accumulatedText += chunkText;
         setAnswer(accumulatedText);
       }
+      setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
     } catch (err) {
       console.error(err);
     }
