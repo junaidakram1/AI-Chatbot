@@ -9,6 +9,7 @@ const NewPrompt = () => {
   const endRef = useRef(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
   const [img, setImg] = useState({
     isLoading: false,
     error: "",
@@ -38,7 +39,7 @@ const NewPrompt = () => {
 
   const add = async (text, isInitial) => {
     if (!isInitial) setQuestion(text);
-
+    setLoading(true);
     try {
       const result = await chat.sendMessageStream(
         Object.entries(img.aiData || {}).length ? [img.aiData, text] : [text]
@@ -52,6 +53,9 @@ const NewPrompt = () => {
       setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
+      setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
     }
   };
 
@@ -61,6 +65,19 @@ const NewPrompt = () => {
     if (!text) return;
     add(text, false);
     e.target.reset();
+
+    try {
+      const response = await fetch("http://localhost:3000/api/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+      const result = await response.json();
+      console.log("Server response:", result);
+    } catch (err) {
+      console.error("Request failed:", err);
+    }
   };
 
   return (
@@ -75,6 +92,12 @@ const NewPrompt = () => {
         />
       )}
       {question && <div className="message user">{question}</div>}
+      {loading && (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <div>Loading...</div>
+        </div>
+      )}
       {answer && (
         <div className="message">
           <Markdown>{answer}</Markdown>
