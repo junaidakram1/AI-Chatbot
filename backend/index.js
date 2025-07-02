@@ -6,6 +6,7 @@ dotenv.config();
 import mongoose from "mongoose";
 import Chat from "./models/Chat.js";
 import UserChats from "./models/userChats.js";
+import { clerkAuthMiddleware } from "./middlewares/clerkAuth.js";
 
 const port = process.env.PORT || 3000;
 
@@ -39,25 +40,38 @@ app.get("/api/upload", (req, res) => {
   res.send(result);
 });
 
-app.post("/api/chats", async (req, res) => {
-  const { text, userId } = req.body;
+app.get("/api/test", clerkAuthMiddleware, (req, res) => {
+  const userId = req.user.id;
+  console.log("Authenticated userId (/api/test):", userId);
+  console.log("Request headers:", req.headers);
+
+  res.status(200).json({
+    message: "User is authenticated",
+    user: {
+      id: userId,
+    },
+  });
+});
+
+app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  console.log("Authenticated userId (POST /api/chats):", userId);
+
+  const { text } = req.body;
 
   try {
-    // CREATE A NEW CHAT
     const newChat = new Chat({
-      userId: userId,
+      userId,
       history: [{ role: "user", parts: [{ text }] }],
     });
 
     const savedChat = await newChat.save();
 
-    // CHECK IF THE USERCHATS EXISTS
-    const userChats = await UserChats.find({ userId: userId });
+    const userChats = await UserChats.find({ userId });
 
-    // IF DOESN'T EXIST CREATE A NEW ONE AND ADD THE CHAT IN THE CHATS ARRAY
     if (!userChats.length) {
       const newUserChats = new UserChats({
-        userId: userId,
+        userId,
         chats: [
           {
             _id: savedChat._id,
@@ -68,9 +82,8 @@ app.post("/api/chats", async (req, res) => {
 
       await newUserChats.save();
     } else {
-      // IF EXISTS, PUSH THE CHAT TO THE EXISTING ARRAY
       await UserChats.updateOne(
-        { userId: userId },
+        { userId },
         {
           $push: {
             chats: {
@@ -80,12 +93,67 @@ app.post("/api/chats", async (req, res) => {
           },
         }
       );
-
-      res.status(201).send(newChat._id);
     }
+
+    res.status(201).send(savedChat._id);
   } catch (err) {
     console.log(err);
     res.status(500).send("Error creating chat!");
+  }
+});
+
+app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  console.log("Authenticated userId:", userId);
+
+  try {
+    const userChats = await UserChats.find({ userId });
+    console.log(userChats);
+    res.status(200).send(userChats[0]?.chats || []);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error fetching userchats!");
+  }
+});
+
+app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const chat = await Chat.findOne({ _id: req.params.id, userId });
+    res.status(200).send(chat);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error fetching chat!");
+  }
+});
+
+app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  const { question, answer, img } = req.body;
+
+  const newItems = [
+    ...(question
+      ? [{ role: "user", parts: [{ text: question }], ...(img && { img }) }]
+      : []),
+    { role: "model", parts: [{ text: answer }] },
+  ];
+
+  try {
+    const updatedChat = await Chat.updateOne(
+      { _id: req.params.id, userId },
+      {
+        $push: {
+          history: {
+            $each: newItems,
+          },
+        },
+      }
+    );
+    res.status(200).send(updatedChat);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error adding conversation!");
   }
 });
 

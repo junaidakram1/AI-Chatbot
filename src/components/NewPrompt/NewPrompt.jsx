@@ -4,9 +4,13 @@ import Upload from "../Upload/Upload";
 import { IKImage } from "imagekitio-react";
 import { startChat } from "../../api/gemini";
 import Markdown from "react-markdown";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useClerk } from "@clerk/clerk-react";
 
-const NewPrompt = () => {
+const NewPrompt = ({ data }) => {
   const endRef = useRef(null);
+  const { session } = useClerk();
+  const formRef = useRef(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,16 +22,11 @@ const NewPrompt = () => {
   });
 
   const chat = startChat({
-    history: [
-      {
-        role: "user",
-        parts: [{ text: "Hello, I have 2 dogs in my house." }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Great to meet you. What would you like to know?" }],
-      },
-    ],
+    history:
+      data?.history?.map(({ role, parts }) => ({
+        role,
+        parts: [{ text: parts[0].text }],
+      })) || [],
     generationConfig: {
       maxOutputTokens: 100,
     },
@@ -36,6 +35,60 @@ const NewPrompt = () => {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [question, answer, img.dbData]);
+
+  // Initialize question and answer from last user and assistant messages
+  useEffect(() => {
+    if (data?.history?.length >= 2) {
+      const lastUserMsg = data.history[data.history.length - 2];
+      const lastAIMessage = data.history[data.history.length - 1];
+
+      if (lastUserMsg.role === "user" && lastAIMessage.role === "assistant") {
+        setQuestion(lastUserMsg.parts[0].text);
+        setAnswer(lastAIMessage.parts[0].text);
+      }
+    }
+  }, [data]);
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({ question, answer }) => {
+      if (!session) throw new Error("No active session");
+      const token = await session.getToken();
+
+      return fetch(`${import.meta.env.VITE_API_URL}/api/chats/${data._id}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          question: question.length ? question : undefined,
+          answer,
+          img: img.dbData?.filePath || undefined,
+        }),
+      }).then((res) => res.json());
+    },
+    onSuccess: () => {
+      queryClient
+        .invalidateQueries({ queryKey: ["chat", data._id] })
+        .then(() => {
+          formRef.current.reset();
+          setQuestion("");
+          setAnswer("");
+          setImg({
+            isLoading: false,
+            error: "",
+            dbData: {},
+            aiData: {},
+          });
+        });
+    },
+    onError: (err) => {
+      console.error(err);
+    },
+  });
 
   const add = async (text, isInitial) => {
     if (!isInitial) setQuestion(text);
@@ -50,12 +103,13 @@ const NewPrompt = () => {
         accumulatedText += chunkText;
         setAnswer(accumulatedText);
       }
-      setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
+
+      // Pass final accumulatedText directly to mutation
+      mutation.mutate({ question: text, answer: accumulatedText });
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
     }
   };
 
@@ -63,26 +117,23 @@ const NewPrompt = () => {
     e.preventDefault();
     const text = e.target.text.value;
     if (!text) return;
+    if (!session) {
+      console.error("No active session");
+      return;
+    }
+
     add(text, false);
     e.target.reset();
-
-    try {
-      const response = await fetch("http://localhost:3000/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-
-      const result = await response.json();
-      console.log("Server response:", result);
-    } catch (err) {
-      console.error("Request failed:", err);
-    }
   };
 
   return (
     <>
-      {img.isLoading && <div>Loading!</div>}
+      {img.isLoading && (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <div>Loading...</div>
+        </div>
+      )}
       {img.dbData?.filePath && (
         <IKImage
           urlEndpoint={import.meta.env.VITE_IMAGE_KIT_ENDPOINT}
@@ -91,7 +142,11 @@ const NewPrompt = () => {
           transformation={[{ width: 340 }]}
         />
       )}
-      {question && <div className="message user">{question}</div>}
+      {question && (
+        <div className="message user">
+          <Markdown>{question}</Markdown>
+        </div>
+      )}
       {loading && (
         <div className="loading-container">
           <div className="spinner"></div>
@@ -105,7 +160,7 @@ const NewPrompt = () => {
       )}
       <div className="endChat" ref={endRef}></div>
       <div className="newPrompt">
-        <form className="newForm" onSubmit={handleSubmit}>
+        <form className="newForm" onSubmit={handleSubmit} ref={formRef}>
           <Upload setImg={setImg} />
           <input type="file" id="file" multiple={false} hidden />
           <input type="text" name="text" placeholder="What's Popping!" />

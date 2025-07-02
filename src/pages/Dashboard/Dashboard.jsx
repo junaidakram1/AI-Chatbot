@@ -1,29 +1,51 @@
-import { useAuth } from "@clerk/clerk-react";
 import "./Dashboard.css";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { useClerk } from "@clerk/clerk-react";
 
 const Dashboard = () => {
   console.log("dash rendered");
-  const { userId } = useAuth();
+  const { session } = useClerk();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const mutation = useMutation({
+    mutationFn: async (text) => {
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const token = await session.getToken();
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chats`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create chat");
+      }
+
+      return res.json();
+    },
+    onSuccess: (id) => {
+      queryClient.invalidateQueries({ queryKey: ["userChats"] });
+      navigate(`/dashboard/chats/${id}`);
+    },
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log("Form submitted", text);
     const text = e.target.text.value;
     if (!text) return;
 
-    try {
-      const response = await fetch("http://localhost:3000/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, text }),
-      });
-
-      const result = await response.json();
-      console.log("Server response:", result);
-    } catch (err) {
-      console.error("Request failed:", err);
-    }
+    mutation.mutate(text);
   };
-
   return (
     <div className="dashboardPage">
       <div className="texts">
