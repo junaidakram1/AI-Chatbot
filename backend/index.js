@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import Chat from "./models/Chat.js";
 import UserChats from "./models/userChats.js";
 import { clerkAuthMiddleware } from "./middlewares/clerkAuth.js";
+import serverless from "serverless-http";
 
 const app = express();
 
@@ -174,4 +175,5 @@ app.listen(port, () => {
 */
 
 // Export the app for Vercel serverless function
-export default app;
+// export default app;
+export default serverless(app);
