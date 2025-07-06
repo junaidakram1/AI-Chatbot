@@ -48,18 +48,18 @@ app.get("/api/upload", (req, res) => {
   res.send(result);
 });
 
-app.get("/api/test", clerkAuthMiddleware, (req, res) => {
-  const userId = req.user.id;
-  console.log("Authenticated userId (/api/test):", userId);
-  console.log("Request headers:", req.headers);
+// app.get("/api/test", clerkAuthMiddleware, (req, res) => {
+//   const userId = req.user.id;
+//   console.log("Authenticated userId (/api/test):", userId);
+//   console.log("Request headers:", req.headers);
 
-  res.status(200).json({
-    message: "User is authenticated",
-    user: {
-      id: userId,
-    },
-  });
-});
+//   res.status(200).json({
+//     message: "User is authenticated",
+//     user: {
+//       id: userId,
+//     },
+//   });
+// });
 
 app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
