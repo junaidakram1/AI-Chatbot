@@ -29,7 +29,9 @@ const RootLayout = () => {
             </Link>
             <div className="user">
               <SignedIn>
-                <UserButton />
+                <div className="userButtonWrapper">
+                  <UserButton />
+                </div>
               </SignedIn>
               <SignedOut>
                 <SignInButton />

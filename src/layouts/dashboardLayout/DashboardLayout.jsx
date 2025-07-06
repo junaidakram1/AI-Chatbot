@@ -1,13 +1,14 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import "./DashboardLayout.css";
 import { useAuth } from "@clerk/clerk-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ChatList from "../../components/ChatList/ChatList";
+import "./DashboardLayout.css";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const DashboardLayout = () => {
   const { userId, isLoaded } = useAuth();
-
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -19,10 +20,15 @@ const DashboardLayout = () => {
 
   return (
     <div className="dashboardLayout">
-      <div className="menu">
+      <button className="hamburgerBtn" onClick={() => setMenuOpen(!menuOpen)}>
+        <SettingsIcon />
+      </button>
+
+      <div className={`menu ${menuOpen ? "open" : ""}`}>
         <ChatList />
       </div>
-      <div className="content">
+
+      <div className="content" onClick={() => menuOpen && setMenuOpen(false)}>
         <Outlet />
       </div>
     </div>

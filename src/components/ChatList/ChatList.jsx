@@ -45,7 +45,7 @@ const ChatList = () => {
       <Link to="/">
         <FaCompass className="icon" /> Explore JD AI
       </Link>
-      <Link to="/">
+      <Link to="https://junaid-portfolio-seven.vercel.app/" target="_blank">
         <FaEnvelope className="icon" /> Contact
       </Link>
       <hr />
@@ -56,7 +56,7 @@ const ChatList = () => {
           : error
           ? "Something went wrong!"
           : chats.length === 0
-          ? "none"
+          ? "No Chats!"
           : chats.map((chat) => (
               <Link to={`/dashboard/chats/${chat._id}`} key={chat._id}>
                 {chat.title}

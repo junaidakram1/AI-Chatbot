@@ -6,25 +6,25 @@ import { useClerk } from "@clerk/clerk-react";
 
 const Homepage = () => {
   const [typingStatus, setTypingStatus] = useState("human1");
-  const { session } = useClerk();
+  // const { session } = useClerk();
 
-  const testAuth = async () => {
-    if (!session) {
-      console.log("No active session");
-      return;
-    }
+  // const testAuth = async () => {
+  //   if (!session) {
+  //     console.log("No active session");
+  //     return;
+  //   }
 
-    const token = await session.getToken();
+  //   const token = await session.getToken();
 
-    const res = await fetch("http://localhost:3000/api/test", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  //   const res = await fetch("http://localhost:3000/api/test", {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   });
 
-    const data = await res.json();
-    console.log(data);
-  };
+  //   const data = await res.json();
+  //   console.log(data);
+  // };
 
   return (
     <div className="homepage">
@@ -41,7 +41,7 @@ const Homepage = () => {
           Get Started!
         </Link>
       </div>
-      <button onClick={testAuth}>Test Authentication Status</button>
+      {/* <button onClick={testAuth}>Test Authentication Status</button> */}
       <div className="right">
         <div className="imgContainer">
           <div className="bgContainer">

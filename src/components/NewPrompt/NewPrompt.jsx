@@ -125,6 +125,16 @@ const NewPrompt = ({ data }) => {
     add(text, false);
     e.target.reset();
   };
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    if (!hasRun.current) {
+      if (data?.history?.length === 1) {
+        add(data.history[0].parts[0].text, true);
+      }
+    }
+    hasRun.current = true;
+  }, []);
 
   return (
     <>

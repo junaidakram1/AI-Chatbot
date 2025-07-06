@@ -3,6 +3,21 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+
+  .userButtonWrapper button {
+    background-color: #140e2d;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+  }
+
+  .userButtonWrapper button:hover {
+    background-color: #2a224d;
+  }
   header {
     display: flex;
     align-items: center;
@@ -25,4 +40,20 @@
     flex: 1;
     overflow: hidden;
   }
+}
+
+.rootLayout .user button {
+  background-color: #3a2f65;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.rootLayout .user button:hover {
+  background-color: #2b2151;
 }
