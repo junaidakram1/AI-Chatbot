@@ -6,10 +6,6 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "**/*.{js,jsx,ts,tsx,css,html}",
-      "use": "@vercel/static-build"
     }
   ],
   "routes": [
