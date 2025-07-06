@@ -4,12 +4,12 @@
   "outputDirectory": "dist",
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "backend/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/api/(.*)", "dest": "/backend/index.js" },
     { "src": "/(.*)", "dest": "/index.html" },
     { "src": "/assets/(.*)", "dest": "/dist/assets/$1" }
   ]
