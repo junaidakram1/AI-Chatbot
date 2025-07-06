@@ -1,3 +1,4 @@
+// api/index.js
 import express from "express";
 import ImageKit from "imagekit";
 import cors from "cors";
@@ -164,16 +165,5 @@ app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-/* 
-// Commented out for Vercel serverless deployment: 
-// Vercel manages server lifecycle, so no need to listen on a port
-
-app.listen(port, () => {
-  connect();
-  console.log("backend is running!");
-});
-*/
-
-// Export the app for Vercel serverless function
-// export default app;
+// Export the app wrapped with serverless-http
 export default serverless(app);
