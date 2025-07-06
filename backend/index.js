@@ -8,8 +8,6 @@ import Chat from "./models/Chat.js";
 import UserChats from "./models/userChats.js";
 import { clerkAuthMiddleware } from "./middlewares/clerkAuth.js";
 
-const port = process.env.PORT || 3000;
-
 const app = express();
 
 app.use(
@@ -20,14 +18,22 @@ app.use(
 );
 app.use(express.json());
 
+// Connect to MongoDB once (cache connection for serverless)
+let isConnected = false;
 const connect = async () => {
+  if (isConnected) {
+    return;
+  }
   try {
     await mongoose.connect(process.env.MONGO_URL);
+    isConnected = true;
     console.log("Connected to MongoDB");
   } catch (err) {
     console.log(err);
   }
 };
+// Connect immediately on cold start
+connect();
 
 const imagekit = new ImageKit({
   urlEndpoint: process.env.IMAGE_KIT_ENDPOINT,
@@ -157,7 +163,15 @@ app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
+/* 
+// Commented out for Vercel serverless deployment: 
+// Vercel manages server lifecycle, so no need to listen on a port
+
 app.listen(port, () => {
   connect();
   console.log("backend is running!");
 });
+*/
+
+// Export the app for Vercel serverless function
+export default app;
