@@ -63,6 +63,7 @@ app.get("/api/upload", (req, res) => {
 
 app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
+  await connect();
   console.log("Authenticated userId (POST /api/chats):", userId);
   console.log("Request body (POST /api/chats):", req.body);
 
@@ -121,6 +122,7 @@ app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
 
 app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
+  await connect();
   console.log("Authenticated userId (GET /api/userchats):", userId);
 
   try {
@@ -149,6 +151,7 @@ app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
 });
 
 app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
+  await connect();
   const userId = req.user.id;
   const chatId = req.params.id;
   const { question, answer, img } = req.body;
