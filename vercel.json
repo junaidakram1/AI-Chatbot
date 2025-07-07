@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist",
   "builds": [
     {
       "src": "backend/api/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
@@ -13,5 +15,7 @@
     { "src": "/assets/(.*)", "dest": "/dist/assets/$1" },
     { "src": "/", "dest": "/dist/index.html" },
     { "src": "/(.*)", "dest": "/dist/index.html" }
-  ]
+  ],
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist"
 }
