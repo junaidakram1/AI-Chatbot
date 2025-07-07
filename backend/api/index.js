@@ -136,6 +136,7 @@ app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
 });
 
 app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
+  await connect();
   const userId = req.user.id;
   const chatId = req.params.id;
   console.log(`Authenticated userId (GET /api/chats/${chatId}):`, userId);
