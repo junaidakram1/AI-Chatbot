@@ -64,20 +64,25 @@ app.get("/api/upload", (req, res) => {
 app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   console.log("Authenticated userId (POST /api/chats):", userId);
+  console.log("Request body (POST /api/chats):", req.body);
 
   const { text } = req.body;
 
   try {
+    console.log("Creating new Chat document");
     const newChat = new Chat({
       userId,
       history: [{ role: "user", parts: [{ text }] }],
     });
 
     const savedChat = await newChat.save();
+    console.log("Saved new Chat with id:", savedChat._id);
 
     const userChats = await UserChats.find({ userId });
+    console.log("Fetched UserChats:", userChats.length);
 
     if (!userChats.length) {
+      console.log("No UserChats found, creating new UserChats document");
       const newUserChats = new UserChats({
         userId,
         chats: [
@@ -89,7 +94,9 @@ app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
       });
 
       await newUserChats.save();
+      console.log("Created new UserChats document");
     } else {
+      console.log("Updating existing UserChats document");
       await UserChats.updateOne(
         { userId },
         {
@@ -101,44 +108,52 @@ app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
           },
         }
       );
+      console.log("Updated UserChats document");
     }
 
+    console.log("Sending response with savedChat._id");
     res.status(201).send(savedChat._id);
   } catch (err) {
-    console.log(err);
+    console.log("Error in POST /api/chats:", err);
     res.status(500).send("Error creating chat!");
   }
 });
 
 app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
-  console.log("Authenticated userId:", userId);
+  console.log("Authenticated userId (GET /api/userchats):", userId);
 
   try {
     const userChats = await UserChats.find({ userId });
-    console.log(userChats);
+    console.log("UserChats found:", userChats.length);
     res.status(200).send(userChats[0]?.chats || []);
   } catch (err) {
-    console.log(err);
+    console.log("Error in GET /api/userchats:", err);
     res.status(500).send("Error fetching userchats!");
   }
 });
 
 app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
+  const chatId = req.params.id;
+  console.log(`Authenticated userId (GET /api/chats/${chatId}):`, userId);
 
   try {
-    const chat = await Chat.findOne({ _id: req.params.id, userId });
+    const chat = await Chat.findOne({ _id: chatId, userId });
+    console.log("Chat found:", !!chat);
     res.status(200).send(chat);
   } catch (err) {
-    console.log(err);
+    console.log(`Error in GET /api/chats/${chatId}:`, err);
     res.status(500).send("Error fetching chat!");
   }
 });
 
 app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
+  const chatId = req.params.id;
   const { question, answer, img } = req.body;
+  console.log(`Authenticated userId (PUT /api/chats/${chatId}):`, userId);
+  console.log("Request body (PUT /api/chats/:id):", req.body);
 
   const newItems = [
     ...(question
@@ -149,7 +164,7 @@ app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
 
   try {
     const updatedChat = await Chat.updateOne(
-      { _id: req.params.id, userId },
+      { _id: chatId, userId },
       {
         $push: {
           history: {
@@ -158,9 +173,10 @@ app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
         },
       }
     );
+    console.log("Updated chat history:", updatedChat);
     res.status(200).send(updatedChat);
   } catch (err) {
-    console.log(err);
+    console.log(`Error in PUT /api/chats/${chatId}:`, err);
     res.status(500).send("Error adding conversation!");
   }
 });
