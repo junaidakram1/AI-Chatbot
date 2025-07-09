@@ -48,6 +48,10 @@ app.get("/api/upload", (req, res) => {
   res.send(result);
 });
 
+app.get("/api/ping", (req, res) => {
+  res.send("pong");
+});
+
 // app.get("/api/test", clerkAuthMiddleware, (req, res) => {
 //   const userId = req.user.id;
 //   console.log("Authenticated userId (/api/test):", userId);
