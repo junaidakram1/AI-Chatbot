@@ -186,4 +186,5 @@ app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
 });
 
 // Export the app wrapped with serverless-http
-export default serverless(app);
+const handler = serverless(app);
+export { handler as default };
