@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import "./NewPrompt.css";
 import Upload from "../Upload/Upload";
 import { IKImage } from "imagekitio-react";
-import { startChat } from "../../api/gemini";
+import { startChat } from "../../gemini/gemini";
 import Markdown from "react-markdown";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/clerk-react";
