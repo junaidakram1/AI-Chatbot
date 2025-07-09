@@ -15,6 +15,7 @@ const app = express();
 app.use(
   cors({
     origin: "https://ai-chatbot-plum-six-89.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
