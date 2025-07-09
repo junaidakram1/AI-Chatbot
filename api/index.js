@@ -18,6 +18,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.options("*", cors());
 app.use(express.json());
 
 // Connect to MongoDB once (cache connection for serverless)
