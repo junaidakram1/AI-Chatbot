@@ -46,12 +46,12 @@ const imagekit = new ImageKit({
   privateKey: process.env.IMAGE_KIT_PRIVATE_KEY,
 });
 
-app.get("/api/upload", (req, res) => {
+app.get("/upload", (req, res) => {
   const result = imagekit.getAuthenticationParameters();
   res.send(result);
 });
 
-app.get("/api/ping", (req, res) => {
+app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
@@ -68,7 +68,7 @@ app.get("/api/ping", (req, res) => {
 //   });
 // });
 
-app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
+app.post("/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   await connect();
   console.log("Authenticated userId (POST /api/chats):", userId);
@@ -127,7 +127,7 @@ app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
+app.get("/userchats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   await connect();
   console.log("Authenticated userId (GET /api/userchats):", userId);
@@ -142,7 +142,7 @@ app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
+app.get("/chats/:id", clerkAuthMiddleware, async (req, res) => {
   await connect();
   const userId = req.user.id;
   const chatId = req.params.id;
@@ -158,7 +158,7 @@ app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
+app.put("/chats/:id", clerkAuthMiddleware, async (req, res) => {
   await connect();
   const userId = req.user.id;
   const chatId = req.params.id;
