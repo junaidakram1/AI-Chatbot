@@ -1,18 +1,13 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node",
-      "config": {
-        "zeroConfig": true,
-        "nodeVersion": "18.x"
-      }
+  "functions": {
+    "index.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/(.*)",
       "dest": "/index.js"
     }
   ]
