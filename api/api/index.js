@@ -12,15 +12,22 @@ import serverless from "serverless-http";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "https://ai-chatbot-plum-six-89.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
+const allowedOrigin = "https://ai-chatbot-plum-six-89.vercel.app";
 
-app.options("*", cors());
+// Replace your existing cors middleware with this explicit CORS handling
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", allowedOrigin);
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    // Respond immediately to OPTIONS preflight requests
+    return res.status(200).end();
+  }
+  next();
+});
+
 app.use(express.json());
 
 // Connect to MongoDB once (cache connection for serverless)
@@ -55,18 +62,7 @@ app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
-// app.get("/api/test", clerkAuthMiddleware, (req, res) => {
-//   const userId = req.user.id;
-//   console.log("Authenticated userId (/api/test):", userId);
-//   console.log("Request headers:", req.headers);
-
-//   res.status(200).json({
-//     message: "User is authenticated",
-//     user: {
-//       id: userId,
-//     },
-//   });
-// });
+// Your existing routes unchanged
 
 app.post("/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
