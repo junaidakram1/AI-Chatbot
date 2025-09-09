@@ -1,4 +1,3 @@
-// api/index.js
 import express from "express";
 import ImageKit from "imagekit";
 import cors from "cors";
@@ -8,7 +7,6 @@ import mongoose from "mongoose";
 import Chat from "../models/Chat.js";
 import UserChats from "../models/userChats.js";
 import { clerkAuthMiddleware } from "../middlewares/clerkAuth.js";
-import serverless from "serverless-http";
 
 const app = express();
 
@@ -22,7 +20,6 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
-    // Respond immediately to OPTIONS preflight requests
     return res.status(200).end();
   }
   next();
@@ -61,8 +58,6 @@ app.get("/upload", (req, res) => {
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
-
-// Your existing routes unchanged
 
 app.post("/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
@@ -131,7 +126,7 @@ app.get("/userchats", clerkAuthMiddleware, async (req, res) => {
   try {
     const userChats = await UserChats.find({ userId });
     console.log("UserChats found:", userChats.length);
-    res.status(200).send(userChats[0]?.chats || []);
+    res.status(200).send(userChats?.chats || []);
   } catch (err) {
     console.log("Error in GET /api/userchats:", err);
     res.status(500).send("Error fetching userchats!");
@@ -188,6 +183,7 @@ app.put("/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-// Export the app wrapped with serverless-http
-const handler = serverless(app);
-export { handler as default };
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Express server running on port ${PORT}`);
+});
