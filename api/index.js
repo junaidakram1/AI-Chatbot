@@ -2,8 +2,8 @@ import ImageKit from "imagekit";
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
-import Chat from "../models/Chat.js";
-import UserChats from "../models/userChats.js";
+import Chat from "./models/Chat.js";
+import UserChats from "./models/userChats.js";
 import { clerkAuthMiddleware } from "../middlewares/clerkAuth.js";
 
 // Connect to MongoDB once (cache connection for serverless)
