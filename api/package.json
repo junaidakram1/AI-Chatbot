@@ -1,13 +1,20 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "AI Chat API for Vercel deployment",
+  "main": "api/index.js",
   "scripts": {
-    "start": "nodemon --env-file .env index.js",
+    "start": "node api/index.js",
+    "dev": "vercel dev",
+    "build": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "api",
+    "express",
+    "ai",
+    "chat"
+  ],
   "author": "",
   "license": "ISC",
   "type": "module",
@@ -15,15 +22,15 @@
     "node": "18.x"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.81.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "imagekit": "^6.0.0",
     "jose": "^6.0.11",
     "mongoose": "^8.16.0",
-    "nodemon": "^3.1.10",
     "serverless-http": "^3.2.0"
   },
-  "vercelHack": true
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
 }

@@ -10,20 +10,28 @@ import { clerkAuthMiddleware } from "../middlewares/clerkAuth.js";
 
 const app = express();
 
-const allowedOrigin = "https://ai-chatbot-plum-six-89.vercel.app";
+const allowedOrigins = [
+  "https://ai-chatbot-plum-six-89.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:5000",
+];
 
-// Replace your existing cors middleware with this explicit CORS handling
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", allowedOrigin);
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-  next();
-});
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
@@ -50,7 +58,21 @@ const imagekit = new ImageKit({
   privateKey: process.env.IMAGE_KIT_PRIVATE_KEY,
 });
 
-app.get("/upload", (req, res) => {
+app.get("/", (req, res) => {
+  res.json({
+    message: "AI Chat API is running",
+    endpoints: [
+      "GET /ping - Health check",
+      "GET /api/upload - ImageKit auth",
+      "POST /api/chats - Create new chat",
+      "GET /api/userchats - Get user chats",
+      "GET /api/chats/:id - Get specific chat",
+      "PUT /api/chats/:id - Update chat",
+    ],
+  });
+});
+
+app.get("/api/upload", (req, res) => {
   const result = imagekit.getAuthenticationParameters();
   res.send(result);
 });
@@ -59,7 +81,7 @@ app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
-app.post("/chats", clerkAuthMiddleware, async (req, res) => {
+app.post("/api/chats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   await connect();
   console.log("Authenticated userId (POST /api/chats):", userId);
@@ -118,7 +140,7 @@ app.post("/chats", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-app.get("/userchats", clerkAuthMiddleware, async (req, res) => {
+app.get("/api/userchats", clerkAuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   await connect();
   console.log("Authenticated userId (GET /api/userchats):", userId);
@@ -126,14 +148,14 @@ app.get("/userchats", clerkAuthMiddleware, async (req, res) => {
   try {
     const userChats = await UserChats.find({ userId });
     console.log("UserChats found:", userChats.length);
-    res.status(200).send(userChats?.chats || []);
+    res.status(200).send(userChats[0]?.chats || []);
   } catch (err) {
     console.log("Error in GET /api/userchats:", err);
     res.status(500).send("Error fetching userchats!");
   }
 });
 
-app.get("/chats/:id", clerkAuthMiddleware, async (req, res) => {
+app.get("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   await connect();
   const userId = req.user.id;
   const chatId = req.params.id;
@@ -149,7 +171,7 @@ app.get("/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-app.put("/chats/:id", clerkAuthMiddleware, async (req, res) => {
+app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   await connect();
   const userId = req.user.id;
   const chatId = req.params.id;
@@ -183,7 +205,5 @@ app.put("/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Express server running on port ${PORT}`);
-});
+// Export app for Vercel serverless (instead of app.listen)
+export default app;
