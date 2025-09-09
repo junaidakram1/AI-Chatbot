@@ -1,6 +1,5 @@
 import express from "express";
 import ImageKit from "imagekit";
-import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -10,28 +9,28 @@ import { clerkAuthMiddleware } from "../middlewares/clerkAuth.js";
 
 const app = express();
 
-const allowedOrigins = [
-  "https://ai-chatbot-plum-six-89.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:5000",
-];
+app.use((req, res, next) => {
+  // Set CORS headers for all requests
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://ai-chatbot-plum-six-89.vercel.app"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+  );
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
 
 app.use(express.json());
 
@@ -205,5 +204,4 @@ app.put("/api/chats/:id", clerkAuthMiddleware, async (req, res) => {
   }
 });
 
-// Export app for Vercel serverless (instead of app.listen)
 export default app;
